@@ -1,5 +1,8 @@
 package com.example.springsecurity.entity;
 
+import lombok.ToString;
+
+@ToString
 public class Student {
 
     private final Integer studentId;
