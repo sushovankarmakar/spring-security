@@ -23,6 +23,30 @@ import static com.example.springsecurity.security.ApplicationUserRole.*;
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
 
+    /* BASIC AUTH
+    * 1. we have to include authorization header in every single request
+    *   username and password is stored in Base64 encrypted format.
+    *   if the authorization header is valid, then 200 OK, if invalid then 401 Unauthorized
+    * 2. HTTPS is recommended
+    * 3. Simple and fast
+    * 4. Disadvantage : can't log out */
+
+    /* FORM BASED AUTH
+    * 1. client sends a POST request with username and password
+    *   server validates those credentials and return 200 OK along with
+    *   a cookie. In this cookie, the SESSIONID is attached to the response.
+    *   now any subsequent request, the client instead of sending the username
+    *   and password, it sends the SESSIONID. and for each request it is checked that
+    *   SESSIONID is validated or not and if it is valid then it sends 200 OK along with request.
+    *
+    *   SESSIONID  is normally valid for 13 minutes.
+    *
+    * 2. Standard in most websites
+    * 3. forms (full control on how we want to style our form)
+    * 4. can logout
+    * 5. HTTPS recommended
+    * */
+
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
@@ -41,9 +65,9 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
         * */
 
         http
-                //.csrf().disable()     // disabling csrf
-                .csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                .and()
+                .csrf().disable()     // disabling csrf
+                /*.csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                .and()*/
                 .authorizeRequests()
                 .antMatchers("/", "index", "/css/*", "/js/*").permitAll()
                 .antMatchers("/api/**").hasRole(STUDENT.name())
