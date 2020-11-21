@@ -39,7 +39,7 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
     *   and password, it sends the SESSIONID. and for each request it is checked that
     *   SESSIONID is validated or not and if it is valid then it sends 200 OK along with request.
     *
-    *   SESSIONID  is normally valid for 13 minutes.
+    *   SESSIONID  is normally invalid after 30 minutes of inactivity.
     *   and it is stored in an in-memory database. we can use Postgres or Redis for this.
     *
     * 2. Standard in most websites
@@ -82,7 +82,9 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 //.httpBasic(); // basic auth
                 .formLogin()   // form based auth
                 .loginPage("/login").permitAll()
-                .defaultSuccessUrl("/courses", true);
+                .defaultSuccessUrl("/courses", true)
+                .and()
+                .rememberMe();  // default is 2 weeks
     }
 
     @Override
