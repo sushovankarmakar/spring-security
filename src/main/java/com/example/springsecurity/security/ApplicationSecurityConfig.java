@@ -15,6 +15,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
+import java.util.concurrent.TimeUnit;
+
 import static com.example.springsecurity.security.ApplicationUserPermission.COURSE_WRITE;
 import static com.example.springsecurity.security.ApplicationUserRole.*;
 
@@ -84,7 +86,13 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 .loginPage("/login").permitAll()
                 .defaultSuccessUrl("/courses", true)
                 .and()
-                .rememberMe();  // default is 2 weeks
+                .rememberMe()  // default is 2 weeks
+                    .tokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(21))    // setting the values to 21 days
+                    .key("somethingverysecure");    // we can also provide key to generate the md5 hash of other two values
+
+                /*like SESSIONID cookie, remember-me cookie is also stored in the in memory database
+                * we can also store that in postgres or redis db
+                * remember-me cookie contains 3 things - username, expiration time, md5 hash of the above other two values */
     }
 
     @Override
