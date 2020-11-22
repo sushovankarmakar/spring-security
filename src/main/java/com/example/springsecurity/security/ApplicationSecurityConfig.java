@@ -93,6 +93,7 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 /*like SESSIONID cookie, remember-me cookie is also stored in the in memory database
                 * we can also store that in postgres or redis db
                 * remember-me cookie contains 3 things - username, expiration time, md5 hash of the above other two values */
+
     }
 
     @Override
