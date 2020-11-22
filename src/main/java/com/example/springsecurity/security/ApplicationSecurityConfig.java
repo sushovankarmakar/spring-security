@@ -66,6 +66,7 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
         * if you're only creating a service that is used by non-browser clients,
         * you likely want to disable CSRF protection
         * */
+        // https://docs.spring.io/spring-security/site/docs/current/reference/html5/#csrf
 
         http
                 .csrf().disable()     // disabling csrf
@@ -83,16 +84,39 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 //.httpBasic(); // basic auth
                 .formLogin()   // form based auth
-                .loginPage("/login").permitAll()
-                .defaultSuccessUrl("/courses", true)
+                    .loginPage("/login").permitAll()
+                    .defaultSuccessUrl("/courses", true)
                 .and()
                 .rememberMe()  // default is 2 weeks
                     .tokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(21))    // setting the values to 21 days
-                    .key("somethingverysecure");    // we can also provide key to generate the md5 hash of other two values
+                    .key("somethingverysecure")    // we can also provide key to generate the md5 hash of other two values
 
-                /*like SESSIONID cookie, remember-me cookie is also stored in the in memory database
-                * we can also store that in postgres or redis db
-                * remember-me cookie contains 3 things - username, expiration time, md5 hash of the above other two values */
+                    /*like SESSIONID cookie, remember-me cookie is also stored in the in memory database
+                    * we can also store that in postgres or redis db
+                    * remember-me cookie contains 3 things - username, expiration time, md5 hash of the above other two values */
+
+                /*  https://stackoverflow.com/questions/23661492/implement-logout-functionality-in-spring-boot
+                * https://docs.spring.io/spring-security/site/docs/3.2.4.RELEASE/reference/htmlsingle/#csrf-logout
+                * https://docs.spring.io/spring-security/site/docs/4.2.12.RELEASE/reference/htmlsingle/#jc-logout
+                * https://www.marcobehler.com/guides/spring-security */
+
+                /* the URL that triggers log out to occur(default is "/logout").
+                * if CSRF protection is enabled (default), then the request must also be POST.
+                * This means that by default POST"/logout" is required to trigger a log out. If CSRF
+                * protection is disabled, then any HTTP method is allowed
+                *
+                * It is considered best practice to use an HTTP POST on any action that changes state (i.e log out) to
+                * protect against CSRF attacks. If you really want to use and HTTP GET, you can use
+                * logoutRequestMatcher(AntPathRequestMatcher(logoutUrl, "GET"));
+                * */
+
+                .and()
+                .logout()   // in the browser's network header tab, we can see that logout is GET request
+                    .logoutUrl("/logout")
+                    .clearAuthentication(true)
+                    .invalidateHttpSession(true)
+                    .deleteCookies("JSESSIONID", "remember-me")     // deleting all the cookies
+                    .logoutSuccessUrl("/login");
 
     }
 
