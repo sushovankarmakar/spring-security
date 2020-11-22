@@ -86,10 +86,13 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 .formLogin()   // form based auth
                     .loginPage("/login").permitAll()
                     .defaultSuccessUrl("/courses", true)
+                    .passwordParameter("password")
+                    .usernameParameter("username")  // parameter name should be same as input type name in login.html
                 .and()
                 .rememberMe()  // default is 2 weeks
                     .tokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(21))    // setting the values to 21 days
                     .key("somethingverysecure")    // we can also provide key to generate the md5 hash of other two values
+                    .rememberMeParameter("remember-me") // parameter name should be same as input type name in login.html
 
                     /*like SESSIONID cookie, remember-me cookie is also stored in the in memory database
                     * we can also store that in postgres or redis db
