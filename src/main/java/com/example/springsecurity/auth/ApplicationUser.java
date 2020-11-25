@@ -6,6 +6,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.Set;
 
+// https://www.yawintutor.com/spring-boot-security-database-authentication-using-userdetailsservice-example/
+
 public class ApplicationUser implements UserDetails {
 
     private final Set<? extends GrantedAuthority> grantedAuthorities;
