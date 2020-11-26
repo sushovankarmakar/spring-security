@@ -1,6 +1,7 @@
 package com.example.springsecurity.security;
 
 import com.example.springsecurity.auth.ApplicationUserService;
+import com.example.springsecurity.jwt.JwtTokenVerifierFilter;
 import com.example.springsecurity.jwt.JwtUsernameAndPasswordAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -85,6 +86,11 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                     // JWT is stateless, so we should keep the session stateless. now session won't be stored in a database as it was storing previously
                 .and()
                     .addFilter(new JwtUsernameAndPasswordAuthenticationFilter(authenticationManager())) // adding Jwt implementation authentication filer
+                    .addFilterAfter(new JwtTokenVerifierFilter(), JwtUsernameAndPasswordAuthenticationFilter.class)
+                    // added JwtTokenVerifierFilter after JwtUsernameAndPasswordAuthenticationFilter
+                    /* (V.V.I) after executing it's own logic, each filter should pass the request and response to it's next filter
+                    * until the request reaches to the controller */
+
                 .authorizeRequests()
                 .antMatchers("/", "index", "/css/*", "/js/*").permitAll()
                 .antMatchers("/api/**").hasRole(STUDENT.name())

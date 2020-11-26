@@ -80,7 +80,8 @@ public class JwtUsernameAndPasswordAuthenticationFilter extends UsernamePassword
             /* authenticationManager will check that the username exists
             and if yes then it will check password is correct or not */
 
-            return authenticationManager.authenticate(authentication);
+            Authentication authenticate = authenticationManager.authenticate(authentication);
+            return authenticate;
 
         } catch (IOException ioException) {
             throw new RuntimeException(ioException);
@@ -93,7 +94,7 @@ public class JwtUsernameAndPasswordAuthenticationFilter extends UsernamePassword
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response,
                                             FilterChain chain, Authentication authResult) throws IOException, ServletException {
-        String key = "securesecuresecuresecuresecuresecuresecuresecure";    // key which will be signed to secure the token
+        String secretKey = "securesecuresecuresecuresecuresecuresecuresecure";    // key which will be signed to secure the token
 
         // create the token
         String token = Jwts.builder()
@@ -101,7 +102,7 @@ public class JwtUsernameAndPasswordAuthenticationFilter extends UsernamePassword
                 .claim("authorities", authResult.getAuthorities())
                 .setIssuedAt(new Date())
                 .setExpiration(java.sql.Date.valueOf(LocalDate.now().plusWeeks(2))) // setting the expiration date of this token as 2 weeks
-                .signWith(Keys.hmacShaKeyFor(key.getBytes())) // key has to be long enough and secure.
+                .signWith(Keys.hmacShaKeyFor(secretKey.getBytes())) // key has to be long enough and secure.
                 .compact();
 
         // send the token by adding that to the response header
