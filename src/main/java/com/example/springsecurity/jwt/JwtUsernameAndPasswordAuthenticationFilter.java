@@ -2,13 +2,13 @@ package com.example.springsecurity.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import javax.crypto.SecretKey;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -58,9 +58,15 @@ public class JwtUsernameAndPasswordAuthenticationFilter extends UsernamePassword
 
 
     private final AuthenticationManager authenticationManager;
+    private final JwtConfig jwtConfig;
+    private final SecretKey secretKey;
 
-    public JwtUsernameAndPasswordAuthenticationFilter(AuthenticationManager authenticationManager) {
+    public JwtUsernameAndPasswordAuthenticationFilter(AuthenticationManager authenticationManager,
+                                                      JwtConfig jwtConfig,
+                                                      SecretKey secretKey) {
         this.authenticationManager = authenticationManager;
+        this.jwtConfig = jwtConfig;
+        this.secretKey = secretKey;
     }
 
     /* attemptAuthentication method will validate the username and password sent by the client */
@@ -94,7 +100,7 @@ public class JwtUsernameAndPasswordAuthenticationFilter extends UsernamePassword
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response,
                                             FilterChain chain, Authentication authResult) throws IOException, ServletException {
-        String secretKey = "securesecuresecuresecuresecuresecuresecuresecure";    // key which will be signed to secure the token
+        //String secretKey = "securesecuresecuresecuresecuresecuresecuresecure";    // key which will be signed to secure the token // this was previous implementation
 
         // create the token
         String token = Jwts.builder()
@@ -102,10 +108,11 @@ public class JwtUsernameAndPasswordAuthenticationFilter extends UsernamePassword
                 .claim("authorities", authResult.getAuthorities())
                 .setIssuedAt(new Date())
                 .setExpiration(java.sql.Date.valueOf(LocalDate.now().plusWeeks(2))) // setting the expiration date of this token as 2 weeks
-                .signWith(Keys.hmacShaKeyFor(secretKey.getBytes())) // key has to be long enough and secure.
+                .signWith(secretKey) // key has to be long enough and secure.
                 .compact();
 
         // send the token by adding that to the response header
-        response.addHeader("Authorization", "Bearer " + token);
+        //response.addHeader("Authorization", "Bearer " + token);   // previous implementation
+        response.addHeader(jwtConfig.getAuthorizationHeader(), jwtConfig.getTokenPrefix() + token);
     }
 }
