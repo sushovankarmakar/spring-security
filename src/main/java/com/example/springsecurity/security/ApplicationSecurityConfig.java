@@ -1,6 +1,7 @@
 package com.example.springsecurity.security;
 
 import com.example.springsecurity.auth.ApplicationUserService;
+import com.example.springsecurity.jwt.JwtUsernameAndPasswordAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,6 +12,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -78,6 +80,11 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 .csrf().disable()     // disabling csrf
                 /*.csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 .and()*/
+                .sessionManagement()
+                    .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                    // JWT is stateless, so we should keep the session stateless. now session won't be stored in a database as it was storing previously
+                .and()
+                    .addFilter(new JwtUsernameAndPasswordAuthenticationFilter(authenticationManager())) // adding Jwt implementation authentication filer
                 .authorizeRequests()
                 .antMatchers("/", "index", "/css/*", "/js/*").permitAll()
                 .antMatchers("/api/**").hasRole(STUDENT.name())
@@ -86,9 +93,17 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.DELETE, "/management/api/**").hasAuthority(COURSE_WRITE.getPermission())
                 .antMatchers(HttpMethod.GET, "/management/api/**").hasAnyRole(ADMIN.name(), ADMIN_TRAINEE.name())*/
                 .anyRequest()
-                .authenticated()
+                .authenticated();
+
+
+
+                //.and().httpBasic(); // basic auth
+
+
+                // FORM BASED AUTH implementation started---------------------------------------------------------------
+
+                /*
                 .and()
-                //.httpBasic(); // basic auth
                 .formLogin()   // form based auth
                     .loginPage("/login").permitAll()
                     .defaultSuccessUrl("/courses", true)
@@ -99,7 +114,7 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                     .tokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(21))    // setting the values to 21 days
                     .key("somethingverysecure")    // we can also provide key to generate the md5 hash of other two values
                     .rememberMeParameter("remember-me") // parameter name should be same as input type name in login.html
-
+                */
                     /*like SESSIONID cookie, remember-me cookie is also stored in the in memory database
                     * we can also store that in postgres or redis db
                     * remember-me cookie contains 3 things - username, expiration time, md5 hash of the above other two values */
@@ -119,6 +134,7 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 * logoutRequestMatcher(AntPathRequestMatcher(logoutUrl, "GET"));
                 * */
 
+                /*
                 .and()
                 .logout()   // in the browser's network header tab, we can see that logout is GET request
                     .logoutUrl("/logout")
@@ -127,6 +143,9 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                     .deleteCookies("JSESSIONID", "remember-me")     // deleting all the cookies
                     .logoutSuccessUrl("/login");
 
+                */
+
+                // FORM BASED AUTH implementation ended-----------------------------------------------------------------
     }
 
     /*@Override
