@@ -107,7 +107,8 @@ public class JwtUsernameAndPasswordAuthenticationFilter extends UsernamePassword
                 .setSubject(authResult.getName())   // name of this principal (current user in our system) like in our case, pujapal, sushovankarmakar or suvajitdey
                 .claim("authorities", authResult.getAuthorities())
                 .setIssuedAt(new Date())
-                .setExpiration(java.sql.Date.valueOf(LocalDate.now().plusWeeks(2))) // setting the expiration date of this token as 2 weeks
+                .setExpiration(java.sql.Date.valueOf(LocalDate.now().plusDays(jwtConfig.getTokenExpirationAfterDays())))
+                    // setting the expiration date of this token as 2 weeks
                 .signWith(secretKey) // key has to be long enough and secure.
                 .compact();
 
