@@ -1,6 +1,24 @@
 package com.example.springsecurity.jwt;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.time.LocalDate;
+import java.util.Date;
+
+/* to reach to an api or controller layer, a request has to go through filer layer,
+but the order of the filters in filter layers are not sequential */
 
 public class JwtUsernameAndPasswordAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
@@ -37,4 +55,56 @@ public class JwtUsernameAndPasswordAuthenticationFilter extends UsernamePassword
     * */
 
     // https://github.com/jwtk/jjwt
+
+
+    private final AuthenticationManager authenticationManager;
+
+    public JwtUsernameAndPasswordAuthenticationFilter(AuthenticationManager authenticationManager) {
+        this.authenticationManager = authenticationManager;
+    }
+
+    /* attemptAuthentication method will validate the username and password sent by the client */
+
+    @Override
+    public Authentication attemptAuthentication(HttpServletRequest request,
+                                                HttpServletResponse response) throws AuthenticationException {
+
+        try {
+            UsernameAndPasswordAuthenticationRequest authenticationRequest =
+                    new ObjectMapper().readValue(request.getInputStream(), UsernameAndPasswordAuthenticationRequest.class);
+            Authentication authentication = new UsernamePasswordAuthenticationToken(
+                    authenticationRequest.getUsername(),
+                    authenticationRequest.getPassword()
+            );
+
+            /* authenticationManager will check that the username exists
+            and if yes then it will check password is correct or not */
+
+            return authenticationManager.authenticate(authentication);
+
+        } catch (IOException ioException) {
+            throw new RuntimeException(ioException);
+        }
+    }
+
+    /* successfulAuthentication method will be invoked after the attemptAuthentication method is successful
+    * successfulAuthentication will create a JWT token and send it to client */
+
+    @Override
+    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response,
+                                            FilterChain chain, Authentication authResult) throws IOException, ServletException {
+        String key = "securesecuresecuresecuresecuresecuresecuresecure";    // key which will be signed to secure the token
+
+        // create the token
+        String token = Jwts.builder()
+                .setSubject(authResult.getName())   // name of this principal (current user in our system) like in our case, pujapal, sushovankarmakar or suvajitdey
+                .claim("authorities", authResult.getAuthorities())
+                .setIssuedAt(new Date())
+                .setExpiration(java.sql.Date.valueOf(LocalDate.now().plusWeeks(2))) // setting the expiration date of this token as 2 weeks
+                .signWith(Keys.hmacShaKeyFor(key.getBytes())) // key has to be long enough and secure.
+                .compact();
+
+        // send the token by adding that to the response header
+        response.addHeader("Authorization", "Bearer " + token);
+    }
 }
